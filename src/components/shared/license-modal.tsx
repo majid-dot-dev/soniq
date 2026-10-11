@@ -1,11 +1,9 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CheckIcon, HandshakeIcon, ShoppingBagOpenIcon, XIcon } from '@phosphor-icons/react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { formatCap, formatMoney, formatTerm } from '@/features/licenses/lib/format'
@@ -254,11 +252,29 @@ function dollarsInputToCents(value: string) {
   return Math.round(n * 100)
 }
 
+function useIsSmUp() {
+  const [matches, setMatches] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(min-width: 640px)').matches : false,
+  )
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 640px)')
+    const onChange = () => setMatches(media.matches)
+    onChange()
+    media.addEventListener('change', onChange)
+    return () => media.removeEventListener('change', onChange)
+  }, [])
+
+  return matches
+}
+
 function LicenseModalBody({
   track,
   licenses,
   initialLicenseId,
   intent = 'add',
+  titleId,
+  showHandle = false,
   onClose,
   onCheckout,
 }: {
@@ -268,6 +284,8 @@ function LicenseModalBody({
   initialLicenseId?: string
   /** `change` = update cart line; hides buy/negotiate. */
   intent?: 'add' | 'change'
+  titleId: string
+  showHandle?: boolean
   onClose: () => void
   onCheckout?: (
     action: LicenseCheckoutAction,
@@ -337,14 +355,20 @@ function LicenseModalBody({
   return (
     <motion.div
       variants={reduce ? undefined : container}
-      initial={reduce ? false : 'hidden'}
+      initial={reduce || showHandle ? false : 'hidden'}
       animate="show"
-      className="flex flex-col"
+      className="flex min-h-0 flex-1 flex-col"
     >
-      <div className="flex items-center gap-3 border-b border-white/8 px-5 py-4 sm:px-6">
+      {showHandle ? (
+        <div className="flex shrink-0 flex-col items-center pt-2.5">
+          <span className="h-1 w-10 rounded-full bg-white/20" aria-hidden />
+        </div>
+      ) : null}
+
+      <div className="flex shrink-0 items-center gap-3 border-b border-white/8 px-5 py-3 sm:px-6 sm:py-4">
         <motion.span
           aria-hidden
-          variants={reduce ? undefined : coverPop}
+          variants={reduce || showHandle ? undefined : coverPop}
           className={cn(
             'grid size-14 shrink-0 place-items-center rounded-xl text-[15px] font-semibold tracking-tight text-white/80',
             track.cover,
@@ -352,29 +376,37 @@ function LicenseModalBody({
         >
           {initials(track.title)}
         </motion.span>
-        <motion.div variants={reduce ? undefined : fadeUp} className="min-w-0 flex-1 pt-0.5">
-          <DialogTitle className="truncate text-[17px] font-semibold tracking-[-0.02em] text-white">
+        <motion.div
+          variants={reduce || showHandle ? undefined : fadeUp}
+          className="min-w-0 flex-1 pt-0.5"
+        >
+          <h2
+            id={titleId}
+            className="truncate text-[17px] font-semibold tracking-[-0.02em] text-white"
+          >
             {track.title}
-          </DialogTitle>
-          <DialogDescription className="mt-0.5 truncate text-[13px] text-ink-mute">
+          </h2>
+          <p className="mt-0.5 truncate text-[13px] text-ink-mute">
             {track.producer}
             <span className="text-ink-faint"> · </span>
             {track.genre}
             <span className="text-ink-faint"> · </span>
             {track.bpm} BPM
-          </DialogDescription>
+          </p>
         </motion.div>
-        <motion.div variants={reduce ? undefined : fadeUp}>
-          <DialogClose
+        <motion.div variants={reduce || showHandle ? undefined : fadeUp}>
+          <button
+            type="button"
             aria-label="Close"
-            className="grid size-8 shrink-0 place-items-center rounded-full text-ink-mute transition-colors hover:bg-white/8 hover:text-white cursor-pointer"
+            onClick={onClose}
+            className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full text-ink-mute transition-colors hover:bg-white/8 hover:text-white"
           >
             <XIcon size={16} />
-          </DialogClose>
+          </button>
         </motion.div>
       </div>
 
-      <div className="max-h-[min(70svh,520px)] overflow-y-auto px-5 py-4 sm:px-6">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:max-h-[min(70svh,520px)] sm:flex-none sm:px-6">
         <motion.p
           variants={reduce ? undefined : fadeUp}
           className="text-[12px] font-medium uppercase tracking-[0.08em] text-ink-faint"
@@ -522,7 +554,7 @@ function LicenseModalBody({
 
       <motion.div
         variants={reduce ? undefined : fadeUp}
-        className="border-t border-white/8 px-5 py-4 sm:px-6"
+        className="shrink-0 border-t border-white/8 px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-4"
       >
         <SmoothHeight
           childKey={`${negotiating && canNegotiate ? 'offer' : 'buy'}-${canNegotiate ? 'n' : 'x'}`}
@@ -667,34 +699,94 @@ export default function LicenseModal({
     offerCents?: number,
   ) => void
 }) {
+  const reduce = useReducedMotion()
+  const titleId = useId()
+  const isDesktop = useIsSmUp()
+  const bodyKey = `${track?.id ?? 'none'}:${initialLicenseId ?? 'default'}:${intent}`
+
+  useEffect(() => {
+    if (!open || isDesktop) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') onClose()
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previous
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open, isDesktop, onClose])
+
+  function renderBody(showHandle: boolean) {
+    if (!track || !open) return null
+    return (
+      <LicenseModalBody
+        key={bodyKey}
+        track={track}
+        licenses={licenses}
+        initialLicenseId={initialLicenseId}
+        intent={intent}
+        titleId={titleId}
+        showHandle={showHandle}
+        onClose={onClose}
+        onCheckout={onCheckout}
+      />
+    )
+  }
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) onClose()
-      }}
-    >
-      <DialogContent
-        showCloseButton={false}
-        overlayClassName="bg-black/70 backdrop-blur-sm duration-300 data-open:fade-in-0 data-closed:fade-out-0"
-        className={cn(
-          'gap-0 overflow-hidden rounded-3xl bg-[#161618] p-0 text-ink ring-0 ring-white/12',
-          'w-full max-w-[calc(100%-2rem)] sm:max-w-md',
-          'duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] data-open:zoom-in-95 data-open:slide-in-from-bottom-3 data-closed:zoom-out-95 data-closed:slide-out-to-bottom-2',
-        )}
-      >
-        {track && open ? (
-          <LicenseModalBody
-            key={`${track.id}:${initialLicenseId ?? 'default'}:${intent}`}
-            track={track}
-            licenses={licenses}
-            initialLicenseId={initialLicenseId}
-            intent={intent}
-            onClose={onClose}
-            onCheckout={onCheckout}
-          />
+    <>
+      <AnimatePresence>
+        {open && track && !isDesktop ? (
+          <div className="fixed inset-0 z-50 flex flex-col justify-end sm:hidden">
+            <motion.button
+              type="button"
+              aria-label="Close license options"
+              className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
+              initial={reduce ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={reduce ? undefined : { opacity: 0 }}
+              transition={{ duration: reduce ? 0 : 0.22, ease: EASE }}
+              onClick={onClose}
+            />
+            <motion.aside
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={titleId}
+              className="relative z-10 flex max-h-[min(92svh,42rem)] w-full flex-col overflow-hidden rounded-t-[1.75rem] border-t border-white/12 bg-[#161618] shadow-[0_-24px_60px_rgba(0,0,0,0.5)]"
+              initial={reduce ? false : { y: '100%' }}
+              animate={{ y: 0 }}
+              exit={reduce ? undefined : { y: '100%' }}
+              transition={{ duration: reduce ? 0 : 0.34, ease: EASE }}
+            >
+              {renderBody(true)}
+            </motion.aside>
+          </div>
         ) : null}
-      </DialogContent>
-    </Dialog>
+      </AnimatePresence>
+
+      <Dialog
+        open={open && isDesktop}
+        onOpenChange={(next) => {
+          if (!next) onClose()
+        }}
+      >
+        <DialogContent
+          showCloseButton={false}
+          overlayClassName="bg-black/70 backdrop-blur-sm duration-200 data-open:fade-in-0 data-closed:fade-out-0"
+          className={cn(
+            'hidden flex-col gap-0 overflow-hidden rounded-3xl bg-[#161618] p-0 text-ink ring-0 ring-white/12 sm:flex',
+            'top-1/2 left-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2',
+            'duration-200 data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95',
+          )}
+        >
+          <DialogTitle className="sr-only">{track?.title ?? 'Choose a license'}</DialogTitle>
+          {isDesktop ? renderBody(false) : null}
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

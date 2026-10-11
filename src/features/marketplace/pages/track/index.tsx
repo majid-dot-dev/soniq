@@ -258,7 +258,7 @@ function TrackPageContent({ trackId }: { trackId: string }) {
 
   return (
     <motion.section
-      className="relative h-full overflow-auto px-4 py-6 pb-28 lg:px-6 lg:py-4 lg:pb-8"
+      className="relative h-full overflow-auto px-4 py-5 pb-6 sm:py-6 lg:px-6 lg:py-4 lg:pb-8"
       variants={reduce ? undefined : pageEnter}
       initial={reduce ? false : 'hidden'}
       animate="show"
@@ -273,10 +273,10 @@ function TrackPageContent({ trackId }: { trackId: string }) {
         </Link>
       </motion.div>
 
-      <div className="mt-4 grid gap-8 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:items-start xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+      <div className="mt-4 grid gap-6 sm:gap-8 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:items-start xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
         <motion.aside
           variants={reduce ? undefined : asideEnter}
-          className="max-w-75 space-y-5 lg:sticky lg:top-2 lg:max-w-none"
+          className="mx-auto w-full max-w-sm space-y-5 sm:max-w-md lg:sticky lg:top-2 lg:mx-0 lg:max-w-none"
         >
           <motion.button
             type="button"
@@ -327,7 +327,7 @@ function TrackPageContent({ trackId }: { trackId: string }) {
           </motion.button>
 
           <motion.header variants={reduce ? undefined : fadeUp}>
-            <h1 className="text-[26px] font-medium leading-tight tracking-[-0.03em] text-white">
+            <h1 className="text-[22px] font-medium leading-tight tracking-[-0.03em] text-white sm:text-[26px]">
               {track.title}
             </h1>
             <button
@@ -507,38 +507,6 @@ function TrackPageContent({ trackId }: { trackId: string }) {
           />
         </motion.div>
       </div>
-
-      <motion.div
-        initial={reduce ? false : { y: 24, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: EASE, delay: 0.2 }}
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#141216]/95 px-4 py-3 backdrop-blur-md lg:hidden"
-      >
-        <div className="mx-auto flex max-w-lg items-center gap-2">
-          {track.freeDownload !== false ? (
-            <motion.button
-              type="button"
-              whileTap={reduce ? undefined : { scale: 0.98 }}
-              transition={springTap}
-              onClick={() => toast.success(`Downloading “${track.title}” (tagged MP3)`)}
-              className="inline-flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white/10 text-[13px] font-semibold text-white"
-            >
-              <DownloadSimpleIcon size={18} />
-              Free download
-            </motion.button>
-          ) : (
-            <motion.button
-              type="button"
-              whileTap={reduce ? undefined : { scale: 0.98 }}
-              transition={springTap}
-              onClick={() => setLicenseOpen(true)}
-              className="inline-flex h-11 flex-1 cursor-pointer items-center justify-center rounded-full bg-white/10 text-[13px] font-semibold text-white"
-            >
-              License · from {lowestPrice}
-            </motion.button>
-          )}
-        </div>
-      </motion.div>
 
       <LicenseModal
         track={track}

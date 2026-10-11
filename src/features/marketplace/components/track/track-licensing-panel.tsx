@@ -40,9 +40,14 @@ export default function TrackLicensingPanel({ track }: { track: MarketplaceTrack
 
   return (
     <section className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/8 sm:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <h2 className="text-[17px] font-medium tracking-[-0.02em] text-white">Licensing</h2>
-        <div className={cn('grid gap-2', isFree ? 'grid-cols-1' : 'grid-cols-2')}>
+        <div
+          className={cn(
+            'grid w-full gap-2 sm:w-auto',
+            isFree ? 'grid-cols-1' : 'grid-cols-2',
+          )}
+        >
           {!isFree ? (
             <motion.button
               type="button"
@@ -50,7 +55,7 @@ export default function TrackLicensingPanel({ track }: { track: MarketplaceTrack
               whileTap={reduce ? undefined : { scale: 0.97 }}
               transition={springTap}
               onClick={addToCart}
-              className="inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-white/8 px-3 text-[12px] font-semibold text-white transition-colors hover:bg-white/12"
+              className="inline-flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-white/8 px-3 text-[12px] font-semibold text-white transition-colors hover:bg-white/12 sm:h-9"
             >
               <ShoppingBagOpenIcon size={15} />
               Add to cart
@@ -62,7 +67,7 @@ export default function TrackLicensingPanel({ track }: { track: MarketplaceTrack
             whileTap={reduce ? undefined : { scale: 0.97 }}
             transition={springTap}
             onClick={buyNow}
-            className="inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-white px-3 text-[12px] font-semibold text-black transition-opacity hover:opacity-90"
+            className="inline-flex h-10 min-w-0 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-white px-3 text-[12px] font-semibold text-black transition-opacity hover:opacity-90 sm:h-9"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
@@ -71,6 +76,7 @@ export default function TrackLicensingPanel({ track }: { track: MarketplaceTrack
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduce ? undefined : { opacity: 0, y: -6 }}
                 transition={{ duration: 0.18, ease: EASE }}
+                className="truncate"
               >
                 {isFree ? 'Download free' : `Buy now · ${formatMoney(selected.priceCents)}`}
               </motion.span>
@@ -79,7 +85,7 @@ export default function TrackLicensingPanel({ track }: { track: MarketplaceTrack
         </div>
       </div>
 
-      <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <ul className="mt-4 grid grid-cols-1 gap-2 min-[480px]:grid-cols-2">
         {options.map((license, index) => {
           const active = license.id === selected.id
           return (
