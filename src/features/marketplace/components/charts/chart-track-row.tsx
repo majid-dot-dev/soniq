@@ -158,7 +158,7 @@ export default function ChartTrackRow({
   }
 
   return (
-    <article className="group flex items-center gap-3 py-3 sm:gap-4">
+    <article className="group flex w-full items-center gap-3 py-3 sm:gap-4">
       {showRank ? (
         <div className="flex w-9 shrink-0 flex-col items-center gap-0.5 sm:w-10">
           <span
@@ -194,7 +194,7 @@ export default function ChartTrackRow({
         </span>
       </button>
 
-      <div className="min-w-0 w-40 shrink-0 sm:w-44 md:w-52">
+      <div className="min-w-0 flex-1 md:w-52 md:flex-none md:shrink-0">
         <p className="truncate text-[14px] font-medium tracking-[-0.01em] text-white">
           {track.title}
         </p>

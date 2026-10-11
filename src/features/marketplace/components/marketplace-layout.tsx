@@ -48,13 +48,26 @@ function studioFlow(path: string, accessToken?: string | null) {
   return url.toString()
 }
 
-function BrandMark({ compact, className }: { compact?: boolean; className?: string }) {
+function BrandMark({
+  compact,
+  size = 'default',
+  className,
+}: {
+  compact?: boolean
+  /** Header chrome uses a quieter mark; sidebar keeps the fuller brand size. */
+  size?: 'default' | 'header'
+  className?: string
+}) {
   return (
     <Link
       to="/marketplace"
       className={cn(
         'font-semibold tracking-[-0.02em] text-white',
-        compact ? 'text-[18px]' : 'text-[20px] sm:text-[22px]',
+        compact
+          ? 'text-[18px]'
+          : size === 'header'
+            ? 'text-[16px] sm:text-[17px]'
+            : 'text-[20px] sm:text-[22px]',
         className,
       )}
       title="SoundSoniq"
@@ -333,7 +346,7 @@ function ContentHeader() {
               exit={reduce ? undefined : { opacity: 0, y: -4 }}
               transition={{ duration: reduce ? 0 : 0.18, ease: EASE }}
             >
-              <BrandMark className="min-w-0 truncate" />
+              <BrandMark size="header" className="min-w-0 truncate" />
               <div className="flex shrink-0 items-center gap-0.5">
                 <button
                   type="button"
@@ -621,7 +634,7 @@ function MobileSidePanel({
           >
             <div className="flex shrink-0 flex-col items-center pt-2.5">
               <span className="h-1 w-10 rounded-full bg-white/20" aria-hidden />
-              <div className="flex w-full items-center justify-between gap-3 px-4 pt-3 pb-2">
+              <div className="flex w-full items-center justify-between gap-3 pr-3 pl-6 pt-3 pb-2">
                 <p id={titleId} className="text-[15px] font-semibold text-white">
                   More
                 </p>
@@ -636,15 +649,15 @@ function MobileSidePanel({
               </div>
             </div>
 
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
               <SideLinks
                 navSections={moreSections}
                 layoutId="marketplace-mobile-sidebar-active"
                 onNavigate={onClose}
               />
-              <div className="mt-auto border-t border-white/8 pt-3 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+              {/* <div className="mt-auto border-t border-white/8 pt-3 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
                 <SellCard />
-              </div>
+              </div> */}
             </div>
           </motion.aside>
         </div>
@@ -796,8 +809,8 @@ export function MarketplaceLayout() {
           </div>
         </aside>
 
-        <div className="relative z-10 min-w-0 flex-1 p-3 sm:p-4 lg:py-4 lg:pr-4 lg:pl-0">
-          <main className="flex h-[calc(100svh-1.5rem)] flex-col overflow-hidden rounded-[1.75rem] border-none bg-white/8 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.16)] backdrop-blur-2xl sm:h-[calc(100svh-2rem)]">
+        <div className="relative z-10 min-w-0 flex-1 lg:py-4 lg:pr-4 lg:pl-0">
+          <main className="flex h-svh flex-col overflow-hidden lg:h-[calc(100svh-2rem)] lg:rounded-[1.75rem] lg:bg-white/8 lg:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.16)] lg:backdrop-blur-2xl">
             <ContentHeader />
             <div className="relative min-h-0 flex-1 overflow-hidden">
               <Outlet />
