@@ -158,9 +158,9 @@ export default function ChartTrackRow({
   }
 
   return (
-    <article className="group flex w-full items-center gap-3 py-3 sm:gap-4">
+    <article className="group flex w-full flex-wrap items-center gap-x-3 gap-y-2 py-3 sm:flex-nowrap sm:gap-4">
       {showRank ? (
-        <div className="flex w-9 shrink-0 flex-col items-center gap-0.5 sm:w-10">
+        <div className="flex w-7 shrink-0 flex-col items-center gap-0.5 sm:w-10">
           <span
             className={cn(
               'tnum text-[15px] font-semibold tracking-tight',
@@ -223,7 +223,7 @@ export default function ChartTrackRow({
         {formatChartStat(track.plays)}
       </p>
 
-      <div className="flex shrink-0 items-center gap-1.5">
+      <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:ml-0">
         <button
           type="button"
           onClick={() => setLicenseOpen(true)}

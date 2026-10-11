@@ -763,7 +763,7 @@ function ExpandableSearch({
           <motion.label
             key="search-field"
             initial={reduce ? false : { width: 36, opacity: 0.7 }}
-            animate={{ width: 220, opacity: 1 }}
+            animate={{ width: 'min(220px, 55vw)', opacity: 1 }}
             exit={reduce ? undefined : { width: 36, opacity: 0 }}
             transition={{ duration: 0.28, ease: EASE }}
             className="flex h-9 items-center gap-2 overflow-hidden rounded-xl bg-white/8 px-3"

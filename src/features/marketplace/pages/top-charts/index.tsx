@@ -185,10 +185,9 @@ export default function TopChartsPage() {
   return (
     <section className="h-full overflow-auto px-4 py-6 lg:px-6 lg:py-4">
       <header>
-        <h1 className="text-[32px] font-medium tracking-[-0.03em] text-white">Top charts</h1>
-        <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-mute">
-          The most played and sold beats right now.
-        </p>
+        <h1 className="text-[24px] font-medium tracking-[-0.03em] text-white sm:text-[26px] lg:text-[32px]">
+          Top charts
+        </h1>
       </header>
 
       <ol className="mt-8 divide-y divide-white/[0.06]">

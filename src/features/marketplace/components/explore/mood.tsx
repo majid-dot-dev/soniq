@@ -114,7 +114,9 @@ export default function Mood({ moods = MOODS }: { moods?: MoodItem[] }) {
     <section className="mt-10 pb-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-[22px] font-medium tracking-[-0.02em] text-white">Browse by mood</h2>
+          <h2 className="text-[18px] font-medium tracking-[-0.02em] text-white sm:text-[20px] lg:text-[22px]">
+            Browse by mood
+          </h2>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <ScrollerNav

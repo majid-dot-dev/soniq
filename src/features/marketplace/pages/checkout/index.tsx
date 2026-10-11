@@ -108,7 +108,7 @@ function CheckoutLine({
             <h3 className="truncate text-[15px] font-medium tracking-[-0.01em] text-white">
               {item.title}
             </h3>
-            <p className="mt-0.5 flex min-w-0 items-center gap-1 text-[12px] text-ink-mute">
+            <p className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 text-[12px] text-ink-mute">
               <span className="truncate">{item.producer}</span>
               {item.verified !== false ? (
                 <SealCheckIcon
@@ -119,7 +119,7 @@ function CheckoutLine({
                 />
               ) : null}
               <span className="text-ink-faint"> · </span>
-              <span className="shrink-0">
+              <span className="min-w-0 truncate">
                 {item.genre} · {item.bpm} BPM
               </span>
             </p>
@@ -216,7 +216,7 @@ export default function CheckoutPage() {
           initial={reduce ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: EASE }}
-          className="text-[32px] font-medium tracking-[-0.03em] text-white"
+          className="text-[24px] font-medium tracking-[-0.03em] text-white sm:text-[26px] lg:text-[32px]"
         >
           Checkout
         </motion.h1>

@@ -134,11 +134,13 @@ function TrackRail({
   return (
     <SectionShell reduce={reduce}>
       <section className={className}>
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <h2 className="text-[22px] font-medium tracking-[-0.02em] text-white">{title}</h2>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
+          <div className="min-w-0">
+            <h2 className="text-[18px] font-medium tracking-[-0.02em] text-white sm:text-[20px] lg:text-[22px]">
+              {title}
+            </h2>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2 self-end">
             <ScrollerNav
               canPrev={scroller.canPrev}
               canNext={scroller.canNext}
@@ -204,10 +206,9 @@ export default function MadeForYouPage() {
       animate={reduce ? undefined : 'show'}
     >
       <motion.header variants={reduce ? undefined : fadeUp}>
-        <h1 className="text-[32px] font-medium tracking-[-0.03em] text-white">Made for you</h1>
-        <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-mute">
-          Personalized picks based on what you play and buy.
-        </p>
+        <h1 className="text-[24px] font-medium tracking-[-0.03em] text-white sm:text-[26px] lg:text-[32px]">
+          Made for you
+        </h1>
       </motion.header>
 
       <TrackRail

@@ -397,7 +397,7 @@ function ProducerPageContent({ producerSlug }: { producerSlug: string }) {
 
   return (
     <motion.section
-      className="h-full overflow-auto px-4 py-6 pb-10 lg:px-6 lg:py-4"
+      className="h-full overflow-auto px-4 py-5 pb-6 sm:py-6 lg:px-6 lg:py-4"
       variants={reduce ? undefined : pageEnter}
       initial={reduce ? false : 'hidden'}
       animate="show"
@@ -415,7 +415,7 @@ function ProducerPageContent({ producerSlug }: { producerSlug: string }) {
       <div className="mt-4 grid gap-8 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:items-start xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
         <motion.aside
           variants={reduce ? undefined : asideEnter}
-          className="max-w-75 space-y-5 lg:sticky lg:top-2 lg:max-w-none"
+          className="mx-auto w-full max-w-sm space-y-5 sm:max-w-md lg:sticky lg:top-2 lg:mx-0 lg:max-w-none"
         >
           <motion.div
             variants={reduce ? undefined : coverPop}
@@ -441,7 +441,7 @@ function ProducerPageContent({ producerSlug }: { producerSlug: string }) {
           </motion.div>
 
           <motion.header variants={reduce ? undefined : fadeUp}>
-            <h1 className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[26px] font-medium leading-tight tracking-[-0.03em] text-white">
+            <h1 className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[22px] font-medium leading-tight tracking-[-0.03em] text-white sm:text-[26px]">
               {producer.name}
               {producer.verified ? (
                 <motion.span

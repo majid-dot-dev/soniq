@@ -251,7 +251,9 @@ export default function CreatorsPage() {
     >
       <div className="shrink-0">
         <motion.header variants={reduce ? undefined : fadeUp}>
-          <h1 className="text-[32px] font-medium tracking-[-0.03em] text-white">Creators</h1>
+          <h1 className="text-[24px] font-medium tracking-[-0.03em] text-white sm:text-[26px] lg:text-[32px]">
+            Creators
+          </h1>
         </motion.header>
 
         <div className="mt-4 border-b border-white/10">
@@ -278,7 +280,7 @@ export default function CreatorsPage() {
               ))}
             </div>
 
-            <div className="flex shrink-0 items-center gap-1.5">
+            <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-1.5 sm:flex-none sm:shrink-0">
               <ExpandableSearch
                 open={searchOpen || query.length > 0}
                 query={query}
@@ -303,15 +305,15 @@ export default function CreatorsPage() {
                     className="inline-flex overflow-hidden rounded-xl"
                     transition={{ duration: 0.3, ease: EASE }}
                   >
-                    <DropdownMenuTrigger className="inline-flex h-9 w-full cursor-pointer items-center gap-2 bg-white/8 px-3.5 text-[13px] font-medium text-white outline-none transition-colors hover:bg-white/12 data-popup-open:bg-white/12">
-                      <span className="shrink-0 text-ink-mute">Sort</span>
+                    <DropdownMenuTrigger className="inline-flex h-9 max-w-full cursor-pointer items-center gap-2 bg-white/8 px-3 text-[13px] font-medium text-white outline-none transition-colors hover:bg-white/12 data-popup-open:bg-white/12 sm:px-3.5">
+                      <span className="hidden shrink-0 text-ink-mute sm:inline">Sort</span>
                       <motion.span
                         key={sort}
                         layout={!reduce ? 'position' : false}
                         initial={reduce ? false : { opacity: 0.35 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.22, ease: EASE }}
-                        className="whitespace-nowrap"
+                        className="max-w-[7.5rem] truncate sm:max-w-none sm:whitespace-nowrap"
                       >
                         {sortLabel}
                       </motion.span>
@@ -899,7 +901,7 @@ function ExpandableSearch({
           <motion.label
             key="search-field"
             initial={reduce ? false : { width: 36, opacity: 0.7 }}
-            animate={{ width: 220, opacity: 1 }}
+            animate={{ width: 'min(220px, 55vw)', opacity: 1 }}
             exit={reduce ? undefined : { width: 36, opacity: 0 }}
             transition={{ duration: 0.28, ease: EASE }}
             className="flex h-9 items-center gap-2 overflow-hidden rounded-xl bg-white/8 px-3"

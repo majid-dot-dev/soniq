@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   CaretDownIcon,
+  FadersIcon,
   HeartIcon,
   ListIcon,
   MagnifyingGlassIcon,
@@ -158,6 +159,7 @@ export default function FavoritesPage() {
   const [view, setView] = useState<ViewMode>('list')
   const [query, setQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   useEffect(() => {
     if (searchOpen) searchRef.current?.focus()
@@ -223,7 +225,9 @@ export default function FavoritesPage() {
     >
       <div className="shrink-0">
         <motion.header variants={reduce ? undefined : fadeUp}>
-          <h1 className="text-[32px] font-medium tracking-[-0.03em] text-white">Favorites</h1>
+          <h1 className="text-[24px] font-medium tracking-[-0.03em] text-white sm:text-[26px] lg:text-[32px]">
+            Favorites
+          </h1>
         </motion.header>
 
         <div className="mt-4 border-b border-white/10">
@@ -231,7 +235,7 @@ export default function FavoritesPage() {
             variants={reduce ? undefined : fadeUp}
             className="flex flex-wrap items-center justify-between gap-3 py-3"
           >
-            <div className="flex items-center rounded-xl bg-white/8 p-0.5">
+            <div className="hidden items-center rounded-xl bg-white/8 p-0.5 lg:flex">
               {TABS.map((item) => (
                 <button
                   key={item.id}
@@ -250,7 +254,28 @@ export default function FavoritesPage() {
               ))}
             </div>
 
-            <div className="flex shrink-0 items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(true)}
+              aria-expanded={filtersOpen}
+              aria-controls="favorites-filters-drawer"
+              className={cn(
+                'inline-flex h-9 cursor-pointer items-center gap-2 rounded-xl px-3.5 text-[13px] font-medium outline-none transition-colors lg:hidden',
+                sort !== 'recent'
+                  ? 'bg-white/14 text-white'
+                  : 'bg-white/8 text-white hover:bg-white/12',
+              )}
+            >
+              <FadersIcon size={16} />
+              <span>Filters</span>
+              {sort !== 'recent' ? (
+                <span className="tnum grid min-w-5 place-items-center rounded-full bg-rose-500 px-1.5 text-[11px] font-semibold leading-5 text-white">
+                  1
+                </span>
+              ) : null}
+            </button>
+
+            <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5 sm:flex-none sm:shrink-0">
               <ExpandableSearch
                 open={searchOpen || query.length > 0}
                 query={query}
@@ -271,10 +296,10 @@ export default function FavoritesPage() {
               <DropdownMenu>
                 <motion.div
                   layout={!reduce}
-                  className="inline-flex overflow-hidden rounded-xl"
+                  className="hidden overflow-hidden rounded-xl lg:inline-flex"
                   transition={{ duration: 0.3, ease: EASE }}
                 >
-                  <DropdownMenuTrigger className="inline-flex h-9 w-full cursor-pointer items-center gap-2 bg-white/8 px-3.5 text-[13px] font-medium text-white outline-none transition-colors hover:bg-white/12 data-popup-open:bg-white/12">
+                  <DropdownMenuTrigger className="inline-flex h-9 max-w-full cursor-pointer items-center gap-2 bg-white/8 px-3.5 text-[13px] font-medium text-white outline-none transition-colors hover:bg-white/12 data-popup-open:bg-white/12">
                     <span className="shrink-0 text-ink-mute">Sort</span>
                     <motion.span
                       key={sort}
@@ -342,6 +367,19 @@ export default function FavoritesPage() {
         </div>
       </div>
 
+      <FiltersDrawer
+        open={filtersOpen}
+        tab={tab}
+        sort={sort}
+        onClose={() => setFiltersOpen(false)}
+        onTabChange={setTab}
+        onSortChange={setSort}
+        onReset={() => {
+          setTab('tracks')
+          setSort('recent')
+        }}
+      />
+
       <div className="min-h-0 flex-1 overflow-auto pb-6">
         {libraryEmpty ? (
           <EmptyFavorites
@@ -388,7 +426,7 @@ export default function FavoritesPage() {
               ))}
             </ol>
           ) : (
-            <ul className="mt-4 grid grid-cols-[repeat(auto-fill,9.25rem)] gap-3.5 sm:grid-cols-[repeat(auto-fill,10.5rem)]">
+            <ul className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(9.25rem,1fr))] gap-3.5 sm:grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))]">
               {tracks.map((track, index) => (
                 <motion.li
                   key={track.id}
@@ -428,7 +466,7 @@ export default function FavoritesPage() {
             ))}
           </ol>
         ) : (
-          <ul className="mt-4 grid grid-cols-[repeat(auto-fill,9.25rem)] gap-3.5 sm:grid-cols-[repeat(auto-fill,10.5rem)]">
+          <ul className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(9.25rem,1fr))] gap-3.5 sm:grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))]">
             {packs.map((pack, index) => (
               <motion.li
                 key={pack.id}
@@ -559,6 +597,177 @@ function EmptyFavorites({
   )
 }
 
+function FiltersDrawer({
+  open,
+  tab,
+  sort,
+  onClose,
+  onTabChange,
+  onSortChange,
+  onReset,
+}: {
+  open: boolean
+  tab: FavoritesTab
+  sort: SortKey
+  onClose: () => void
+  onTabChange: (tab: FavoritesTab) => void
+  onSortChange: (sort: SortKey) => void
+  onReset: () => void
+}) {
+  const reduce = useReducedMotion()
+  const titleId = useId()
+  const canReset = tab !== 'tracks' || sort !== 'recent'
+
+  useEffect(() => {
+    if (!open) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') onClose()
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previous
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open, onClose])
+
+  return (
+    <AnimatePresence>
+      {open ? (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end lg:hidden">
+          <motion.button
+            type="button"
+            aria-label="Close filters"
+            className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
+            initial={reduce ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduce ? undefined : { opacity: 0 }}
+            transition={{ duration: reduce ? 0 : 0.22, ease: EASE }}
+            onClick={onClose}
+          />
+          <motion.aside
+            id="favorites-filters-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            className="relative z-10 flex max-h-[min(88svh,42rem)] w-full flex-col rounded-t-[1.75rem] border-t border-white/12 bg-[#121110] shadow-[0_-24px_60px_rgba(0,0,0,0.5)]"
+            initial={reduce ? false : { y: '100%' }}
+            animate={{ y: 0 }}
+            exit={reduce ? undefined : { y: '100%' }}
+            transition={{ duration: reduce ? 0 : 0.34, ease: EASE }}
+          >
+            <div className="flex shrink-0 flex-col items-center pt-2.5">
+              <span className="h-1 w-10 rounded-full bg-white/20" aria-hidden />
+              <div className="flex w-full items-center justify-between gap-3 pr-3 pl-6 pt-3 pb-2">
+                <div className="min-w-0">
+                  <p id={titleId} className="text-[15px] font-semibold text-white">
+                    Filters
+                  </p>
+                  <p className="mt-0.5 text-[12px] text-ink-mute">
+                    {tab === 'tracks' ? 'Tracks' : 'Sound packs'}
+                    {sort !== 'recent' ? ` · ${SORTS.find((s) => s.id === sort)?.label}` : ''}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Close filters"
+                  className="grid size-9 place-items-center rounded-full text-ink-2 transition-colors hover:bg-white/8 hover:text-white"
+                >
+                  <XIcon size={18} />
+                </button>
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3">
+              <div className="space-y-5">
+                <section>
+                  <div className="mb-2.5 px-1">
+                    <h3 className="text-[12px] font-medium tracking-wide text-ink-faint uppercase">
+                      Type
+                    </h3>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {TABS.map((item) => {
+                      const checked = tab === item.id
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          aria-pressed={checked}
+                          onClick={() => onTabChange(item.id)}
+                          className={cn(
+                            'cursor-pointer rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors',
+                            checked
+                              ? 'bg-white text-black'
+                              : 'bg-white/8 text-ink-2 hover:bg-white/12 hover:text-white',
+                          )}
+                        >
+                          {item.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </section>
+
+                <section>
+                  <div className="mb-2.5 px-1">
+                    <h3 className="text-[12px] font-medium tracking-wide text-ink-faint uppercase">
+                      Sort
+                    </h3>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {SORTS.map((option) => {
+                      const checked = sort === option.id
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          aria-pressed={checked}
+                          onClick={() => onSortChange(option.id)}
+                          className={cn(
+                            'cursor-pointer rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors',
+                            checked
+                              ? 'bg-white text-black'
+                              : 'bg-white/8 text-ink-2 hover:bg-white/12 hover:text-white',
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2 border-t border-white/10 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+              <button
+                type="button"
+                onClick={onReset}
+                disabled={!canReset}
+                className="h-11 flex-1 cursor-pointer rounded-full bg-white/8 text-[14px] font-medium text-white transition-colors hover:bg-white/12 disabled:cursor-default disabled:opacity-40"
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="h-11 flex-[1.4] cursor-pointer rounded-full bg-white text-[14px] font-semibold text-black transition-colors hover:bg-white/90"
+              >
+                Show results
+              </button>
+            </div>
+          </motion.aside>
+        </div>
+      ) : null}
+    </AnimatePresence>
+  )
+}
+
 function ExpandableSearch({
   open,
   query,
@@ -587,7 +796,7 @@ function ExpandableSearch({
           <motion.label
             key="search-field"
             initial={reduce ? false : { width: 36, opacity: 0.7 }}
-            animate={{ width: 220, opacity: 1 }}
+            animate={{ width: 'min(220px, 55vw)', opacity: 1 }}
             exit={reduce ? undefined : { width: 36, opacity: 0 }}
             transition={{ duration: 0.28, ease: EASE }}
             className="flex h-9 items-center gap-2 overflow-hidden rounded-xl bg-white/8 px-3"

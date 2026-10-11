@@ -116,7 +116,9 @@ export default function GenresPage() {
         className="flex flex-wrap items-end justify-between gap-3"
       >
         <div>
-          <h1 className="text-[32px] font-medium tracking-[-0.03em] text-white">Genres</h1>
+          <h1 className="text-[24px] font-medium tracking-[-0.03em] text-white sm:text-[26px] lg:text-[32px]">
+            Genres
+          </h1>
         </div>
 
         <ExpandableSearch
@@ -271,7 +273,7 @@ function ExpandableSearch({
           <motion.label
             key="search-field"
             initial={reduce ? false : { width: 36, opacity: 0.7 }}
-            animate={{ width: 220, opacity: 1 }}
+            animate={{ width: 'min(220px, 55vw)', opacity: 1 }}
             exit={reduce ? undefined : { width: 36, opacity: 0 }}
             transition={{ duration: 0.28, ease: EASE }}
             className="flex h-9 items-center gap-2 overflow-hidden rounded-xl bg-white/8 px-3"
