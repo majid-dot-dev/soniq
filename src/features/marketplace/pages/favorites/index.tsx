@@ -441,6 +441,7 @@ export default function FavoritesPage() {
                 >
                   <MarketplaceTrackCard
                     track={track}
+                    className="w-full sm:w-full"
                     onSelect={() => navigate(marketplaceTrackPath(track.id))}
                   />
                 </motion.li>
@@ -502,7 +503,7 @@ function FavoritePackCard({
       whileHover={reduce ? undefined : { y: -3 }}
       whileTap={reduce ? undefined : { scale: 0.98 }}
       onClick={() => toast.success(`Sound pack “${pack.title}” coming soon`)}
-      className="group w-37 cursor-pointer text-left outline-none sm:w-42"
+      className="group w-full cursor-pointer text-left outline-none"
     >
       <span className="relative block aspect-square overflow-hidden rounded-xl">
         <span className={cn('absolute inset-0', pack.cover)} />

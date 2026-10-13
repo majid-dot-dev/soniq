@@ -1,114 +1,152 @@
+import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import { motion, useReducedMotion } from 'motion/react'
+import type { GenreMesh, MeshBlob } from '@/features/marketplace/data/marketplace-genres'
+import {
+  MARKETPLACE_MOOD_SEED,
+  meshForMoodSlug,
+  moodMatchKeys,
+  type MarketplaceMoodTerm,
+} from '@/features/marketplace/data/marketplace-moods'
+import { MARKETPLACE_TRACKS } from '@/features/marketplace/data/marketplace-tracks'
 import HorizontalScroller, {
   ScrollerNav,
 } from '@/features/marketplace/components/explore/horizontal-scroller'
 import { useHorizontalScroller } from '@/features/marketplace/components/explore/use-horizontal-scroller'
-import { cn } from '@/lib/utils'
 
-type MoodItem = {
-  id: string
-  label: string
-  tracks: number
-  accent: string
-  tone: string
+const EASE = [0.16, 1, 0.3, 1] as const
+
+const GRAIN =
+  "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E\")"
+
+/** Flagship moods for the Explore rail (order is intentional). */
+const RAIL_SLUGS = [
+  'dark',
+  'melodic',
+  'energetic',
+  'chill',
+  'emotional',
+  'hype',
+  'aggressive',
+  'dreamy',
+] as const
+
+type MoodCardModel = MarketplaceMoodTerm &
+  GenreMesh & {
+    trackCount: number
+  }
+
+function blobsToBackground(blobs: MeshBlob[]) {
+  return blobs
+    .map((blob) => {
+      const shape = blob.shape ?? 'circle'
+      const falloff = blob.falloff ?? '55%'
+      return `radial-gradient(in oklab ${shape} at ${blob.at}, ${blob.color} 0%, transparent ${falloff})`
+    })
+    .join(', ')
 }
 
-const MOODS: MoodItem[] = [
-  {
-    id: 'dark',
-    label: 'Dark',
-    tracks: 842,
-    accent: 'text-zinc-200',
-    tone: 'bg-[linear-gradient(145deg,#3f3f46_0%,#18181b_48%,#09090b_100%)]',
-  },
-  {
-    id: 'melodic',
-    label: 'Melodic',
-    tracks: 1204,
-    accent: 'text-rose-200',
-    tone: 'bg-[linear-gradient(145deg,#be123c_0%,#4c0519_52%,#1c1917_100%)]',
-  },
-  {
-    id: 'energetic',
-    label: 'Energetic',
-    tracks: 966,
-    accent: 'text-orange-100',
-    tone: 'bg-[linear-gradient(145deg,#ea580c_0%,#7c2d12_50%,#1c1917_100%)]',
-  },
-  {
-    id: 'chill',
-    label: 'Chill',
-    tracks: 731,
-    accent: 'text-sky-100',
-    tone: 'bg-[linear-gradient(145deg,#0284c7_0%,#0c4a6e_50%,#0c0a09_100%)]',
-  },
-  {
-    id: 'emotional',
-    label: 'Emotional',
-    tracks: 588,
-    accent: 'text-rose-100',
-    tone: 'bg-[linear-gradient(145deg,#e11d48_0%,#881337_48%,#0c0a09_100%)]',
-  },
-  {
-    id: 'bouncy',
-    label: 'Bouncy',
-    tracks: 654,
-    accent: 'text-amber-100',
-    tone: 'bg-[linear-gradient(145deg,#d97706_0%,#78350f_50%,#0c0a09_100%)]',
-  },
-  {
-    id: 'aggressive',
-    label: 'Aggressive',
-    tracks: 412,
-    accent: 'text-red-100',
-    tone: 'bg-[linear-gradient(145deg,#dc2626_0%,#7f1d1d_48%,#0c0a09_100%)]',
-  },
-  {
-    id: 'dreamy',
-    label: 'Dreamy',
-    tracks: 523,
-    accent: 'text-stone-100',
-    tone: 'bg-[linear-gradient(145deg,#78716c_0%,#44403c_48%,#0c0a09_100%)]',
-  },
-]
+function moodTracksPath(label: string) {
+  return `/marketplace/tracks?mood=${encodeURIComponent(label)}`
+}
 
-function MoodCard({ mood }: { mood: MoodItem }) {
+function countTracksForMood(term: MarketplaceMoodTerm) {
+  const keys = new Set(moodMatchKeys(term))
+  return MARKETPLACE_TRACKS.filter((track) =>
+    track.tags.some((tag) => keys.has(tag.toLowerCase())),
+  ).length
+}
+
+function buildRailMoods(moods?: MoodCardModel[]): MoodCardModel[] {
+  if (moods) return moods
+
+  const bySlug = new Map(MARKETPLACE_MOOD_SEED.map((term) => [term.slug, term]))
+  return RAIL_SLUGS.flatMap((slug) => {
+    const term = bySlug.get(slug)
+    if (!term) return []
+    const mesh = meshForMoodSlug(term.slug)
+    return [
+      {
+        ...term,
+        ...mesh,
+        trackCount: countTracksForMood(term),
+      } satisfies MoodCardModel,
+    ]
+  })
+}
+
+function MeshBackdrop({ base, blobs }: { base: string; blobs: MeshBlob[] }) {
+  const meshStyle = {
+    backgroundColor: base,
+    backgroundImage: blobsToBackground(blobs),
+  } satisfies CSSProperties
+
+  return (
+    <>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-[-28%] scale-[1.05] blur-[42px] saturate-[1.35]"
+        style={meshStyle}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-55"
+        style={meshStyle}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_42%,rgba(0,0,0,0.45)_100%)]"
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.14] mix-blend-overlay"
+        style={{ backgroundImage: GRAIN, backgroundSize: '180px 180px' }}
+      />
+    </>
+  )
+}
+
+function MoodCard({
+  mood,
+  reduce,
+}: {
+  mood: MoodCardModel
+  reduce: boolean | null
+}) {
   return (
     <Link
-      to={`/marketplace/tracks?mood=${encodeURIComponent(mood.label)}`}
-      className={cn(
-        'group relative flex h-[112px] w-[260px] shrink-0 flex-col justify-between overflow-hidden rounded-2xl px-4 py-3.5 transition-transform duration-300 hover:scale-[1.015] sm:w-[280px]',
-        mood.tone,
-      )}
+      to={moodTracksPath(mood.label)}
+      className="group block w-[140px] shrink-0 outline-none sm:w-[160px]"
     >
-      <span
-        className={cn(
-          'pointer-events-none absolute -right-1 -bottom-4 text-[64px] font-semibold tracking-[-0.04em] opacity-[0.03] transition-opacity duration-300 group-hover:opacity-[0.05]',
-          mood.accent,
-        )}
+      <motion.span
+        whileHover={reduce ? undefined : { scale: 1.03 }}
+        whileTap={reduce ? undefined : { scale: 0.985 }}
+        transition={{ duration: 0.35, ease: EASE }}
+        className="relative isolate block aspect-square overflow-hidden rounded-[18px] group-focus-visible:outline group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-white/35"
+        style={{ backgroundColor: mood.base }}
       >
-        {mood.label}
-      </span>
+        <MeshBackdrop base={mood.base} blobs={mood.blobs} />
 
-      <span className="relative">
-        <span className="block text-[18px] font-medium tracking-[-0.02em] text-white">{mood.label}</span>
-        <span className="tnum mt-1 block text-[12px] text-white/70">
-          {mood.tracks.toLocaleString('en-US')} tracks
+        <span className="relative z-10 grid size-full place-items-center px-3 text-center sm:px-4">
+          <span className="min-w-0">
+            <span className="block truncate text-[16px] font-semibold tracking-[-0.03em] text-white drop-shadow-[0_1px_12px_rgba(0,0,0,0.35)] sm:text-[18px]">
+              {mood.label}
+            </span>
+            <span className="tnum mt-1 block text-[11px] text-white/70 sm:text-[12px]">
+              {mood.trackCount.toLocaleString('en-US')}{' '}
+              {mood.trackCount === 1 ? 'track' : 'tracks'}
+            </span>
+          </span>
         </span>
-      </span>
-
-      <span className="relative text-[12px] font-medium text-white/75 transition-colors group-hover:text-white">
-        Browse
-        <span className="ml-1 inline-block transition-transform duration-300 group-hover:translate-x-0.5">
-          →
-        </span>
-      </span>
+      </motion.span>
     </Link>
   )
 }
 
-export default function Mood({ moods = MOODS }: { moods?: MoodItem[] }) {
+export default function Mood({ moods }: { moods?: MoodCardModel[] }) {
   const scroller = useHorizontalScroller()
+  const reduce = useReducedMotion()
+  const items = buildRailMoods(moods)
 
   return (
     <section className="mt-10 pb-4">
@@ -136,12 +174,12 @@ export default function Mood({ moods = MOODS }: { moods?: MoodItem[] }) {
 
       <HorizontalScroller
         scrollerRef={scroller.ref}
-        className="mt-4"
+        className="mt-3 pt-2 pb-2"
         contentClassName="gap-3"
         aria-label="Browse by mood"
       >
-        {moods.map((mood) => (
-          <MoodCard key={mood.id} mood={mood} />
+        {items.map((mood) => (
+          <MoodCard key={mood.slug} mood={mood} reduce={reduce} />
         ))}
       </HorizontalScroller>
     </section>

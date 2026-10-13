@@ -85,18 +85,23 @@ export function ExploreStories({ stories = STORIES }: { stories?: ExploreStory[]
 
   return (
     <>
-      <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] lg:-mx-6 lg:px-6 [&::-webkit-scrollbar]:hidden">
-        <div className="flex w-max gap-3.5 pb-1">
-          {stories.map((story) => (
-            <StoryRing
-              key={story.id}
-              story={{ ...story, seen: seen.has(story.id) || story.seen }}
-              active={activeId === story.id}
-              onSelect={() => open(story.id)}
-            />
-          ))}
+      <section>
+        <h2 className="text-[18px] font-medium tracking-[-0.02em] text-white sm:text-[20px] lg:text-[22px]">
+          Stories
+        </h2>
+        <div className="-mx-4 mt-3 overflow-x-auto px-4 pt-2 pb-1 [scrollbar-width:none] lg:-mx-6 lg:px-6 [&::-webkit-scrollbar]:hidden">
+          <div className="flex w-max gap-3.5" aria-label="Stories">
+            {stories.map((story) => (
+              <StoryRing
+                key={story.id}
+                story={{ ...story, seen: seen.has(story.id) || story.seen }}
+                active={activeId === story.id}
+                onSelect={() => open(story.id)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
       <StoryViewer
         story={active}
